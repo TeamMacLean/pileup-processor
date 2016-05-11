@@ -30,18 +30,20 @@ import (
 )
 
 func main() {
-	if (len(os.Args) < 3) {
-		panic("supply input.pileup and output.json file")
-	}
+	checkInputs()
 	inputFile := os.Args[1]
 	outFile := os.Args[2]
-	keepers := readFile(inputFile)
-	//strB, err := json.Marshal(keepers)
+	json := Process(inputFile)
+	writeJson(string(json), outFile);
+}
+
+func Process(path string) string {
+	keepers := readFile(path)
 	strB, err := json.MarshalIndent(keepers, "", "    ")
 	if (err != nil) {
 		panic(err)
 	}
-	writeJson(string(strB), outFile);
+	return string(strB)
 }
 
 type Options struct {
@@ -93,6 +95,12 @@ func (r Pileup) isSNP(options Options) bool {
 	}
 	return false
 
+}
+
+func checkInputs() {
+	if (len(os.Args) < 3) {
+		panic("supply input.pileup and output.json file")
+	}
 }
 
 func readFile(in string) []Pileup {
