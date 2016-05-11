@@ -34,22 +34,39 @@ func main() {
 	checkInputs()
 	inputFile := os.Args[1]
 	outFile := os.Args[2]
-	json := Process(inputFile)
+	options := Options{minDepth:6, minNonRefCount:3, ignoreReferenceN:true}
+	json := Process(inputFile, options)
 	writeJson(string(json), outFile);
 }
 
-func Process(path string) string {
-	keepers := readFile(path)
+func Process(path string, options Options) string {
+	keepers := readFile(path, options)
 	strB, err := json.MarshalIndent(keepers, "", "    ")
 	if (err != nil) {
 		panic(err)
 	}
 	return string(strB)
 }
+
 //export ProcessInRuby
-func ProcessInRuby(path *C.char) *C.char {
-	gPath := C.GoString(path)
-	out := string(Process(gPath))
+func ProcessInRuby(intOpts *C.char) *C.char {
+
+	type RubyOptions struct {
+		File             string `json:"file"`
+		IgnoreReferenceN bool `json:"ignore_reference_n"`
+		MinDepth         int `json:"min_depth"`
+		MinNonRefCount   int `json:"min_non_ref_count"`
+	}
+
+	optString := C.GoString(intOpts)
+	ro := RubyOptions{}
+	json.Unmarshal([]byte(optString), &ro)
+
+	println(optString)
+
+	options := Options{ro.MinDepth, ro.MinNonRefCount, ro.IgnoreReferenceN}
+
+	out := string(Process(ro.File, options))
 	return C.CString(out)
 
 }
@@ -111,7 +128,7 @@ func checkInputs() {
 	}
 }
 
-func readFile(in string) []Pileup {
+func readFile(in string, options Options) []Pileup {
 
 	if _, err := os.Stat(in); os.IsNotExist(err) {
 		// path/to/whatever does not exist
@@ -119,7 +136,6 @@ func readFile(in string) []Pileup {
 	}
 
 	keepers := make([]Pileup, 0)
-	options := Options{minDepth:6, minNonRefCount:3, ignoreReferenceN:true}
 	inFile, _ := os.Open(in)
 	defer inFile.Close()
 	scanner := bufio.NewScanner(inFile)
