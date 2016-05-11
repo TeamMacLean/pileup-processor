@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"encoding/json"
 	"io/ioutil"
+	"C"
 )
 
 func main() {
@@ -44,6 +45,13 @@ func Process(path string) string {
 		panic(err)
 	}
 	return string(strB)
+}
+//export ProcessInRuby
+func ProcessInRuby(path *C.char) *C.char {
+	gPath := C.GoString(path)
+	out := string(Process(gPath))
+	return C.CString(out)
+
 }
 
 type Options struct {
@@ -105,9 +113,13 @@ func checkInputs() {
 
 func readFile(in string) []Pileup {
 
+	if _, err := os.Stat(in); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		panic(in + " DOES NOT EXIST")
+	}
+
 	keepers := make([]Pileup, 0)
 	options := Options{minDepth:6, minNonRefCount:3, ignoreReferenceN:true}
-
 	inFile, _ := os.Open(in)
 	defer inFile.Close()
 	scanner := bufio.NewScanner(inFile)
