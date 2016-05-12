@@ -12,9 +12,10 @@ import (
 func main() {
 }
 
-
 //export ProcessInRuby
 func ProcessInRuby(intOpts *C.char) *C.char {
+
+	var errorOut string
 
 	type RubyOptions struct {
 		File             string `json:"file"`
@@ -32,7 +33,6 @@ func ProcessInRuby(intOpts *C.char) *C.char {
 	options := Options{ro.MinDepth, ro.MinNonRefCount, ro.IgnoreReferenceN}
 
 	if _, err := os.Stat(ro.File); os.IsNotExist(err) {
-		// path/to/whatever does not exist
 		panic(ro.File + " DOES NOT EXIST")
 	}
 
@@ -46,16 +46,23 @@ func ProcessInRuby(intOpts *C.char) *C.char {
 		s := strings.Split(text, "\t");
 
 		if (len(s) != 6) {
-			panic("there were " + strconv.Itoa(len(s)) + " chunks instead of 6")
+			errorOut = "there were " + strconv.Itoa(len(s)) + " chunks instead of 6"
+			break
 		}
 
 		if (isSNP(s, options)) {
 			str := s[0] + "\t" + s[1] + "\t" + s[2] + "\t" + s[3] + "\t" + s[4] + "\t" + s[5] + "\n"
-			writeLine(ro.Out, str)
+			err := writeLine(ro.Out, str)
+
+			if (err != nil) {
+				errorOut = "could not write line to file"
+				break
+
+			}
 		}
 
 	}
-	return C.CString(ro.Out)
+	return C.CString(errorOut)
 }
 
 func isSNP(p []string, options Options) bool {
@@ -90,15 +97,17 @@ func nonRefCount(str string) int {
 	return strings.Count(str, "A") + strings.Count(str, "T") + strings.Count(str, "G") + strings.Count(str, "C") + strings.Count(str, "a") + strings.Count(str, "t") + strings.Count(str, "g") + strings.Count(str, "c")
 }
 
-func writeLine(filename string, text string) {
+func writeLine(filename string, text string) error {
 	f, err := os.OpenFile(filename, os.O_APPEND | os.O_WRONLY | os.O_CREATE, 0600)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	defer f.Close()
 
 	if _, err = f.WriteString(text); err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
