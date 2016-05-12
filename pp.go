@@ -35,17 +35,15 @@ func main() {
 	inputFile := os.Args[1]
 	outFile := os.Args[2]
 	options := Options{minDepth:6, minNonRefCount:3, ignoreReferenceN:true}
-	json := Process(inputFile, options)
-	writeJson(string(json), outFile);
-}
 
-func Process(path string, options Options) string {
-	keepers := readFile(path, options)
+	keepers := readFile(inputFile, options)
 	strB, err := json.MarshalIndent(keepers, "", "    ")
 	if (err != nil) {
 		panic(err)
 	}
-	return string(strB)
+	//writeJson(string(json), outFile);
+	//json := Process(inputFile, options)
+	writeJson(string(strB), outFile);
 }
 
 //export ProcessInRuby
@@ -59,18 +57,23 @@ func ProcessInRuby(intOpts *C.char) *C.char {
 	}
 
 	optString := C.GoString(intOpts)
+	println("GO: " + optString)
+
 	ro := RubyOptions{}
 	json.Unmarshal([]byte(optString), &ro)
 
-	println(optString)
-
 	options := Options{ro.MinDepth, ro.MinNonRefCount, ro.IgnoreReferenceN}
+	keepers := readFile(ro.File, options)
 
-	out := string(Process(ro.File, options))
-	return C.CString(out)
+	strB, err := json.MarshalIndent(keepers, "", "    ")
+	if (err != nil) {
+		panic(err)
+	}
 
+	strstr := C.CString(string(strB))
+
+	return strstr
 }
-
 type Options struct {
 	minDepth         int
 	minNonRefCount   int
