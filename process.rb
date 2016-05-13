@@ -13,9 +13,9 @@ end
 
 
 def non_ref_count(str)
-  str.count("ATGCatgc")
+  # str.count("ATGCatgc")
+  count(str)
 end
-
 
 
 vars_hash = Hash.new { |h, k| h[k] = Hash.new(&h.default_proc) }
@@ -33,4 +33,14 @@ File.foreach(ARGV[0]) do |line|
   if is_snp(split_line, opts)
     vars_hash[split_line[0]][split_line[1].to_i] = split_line
   end
+end
+
+def count(str)
+  counter = 0
+  str.each_char do |c|
+    if c=="A" |c=="T"|c=="G"|c="C"|c=="a" |c=="t"|c=="g"|c="c"
+      counter+=1
+    end
+  end
+  counter
 end
