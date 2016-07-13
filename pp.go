@@ -29,7 +29,10 @@ func ProcessInRuby(intOpts *C.char) *C.char {
 	println("GO RECEIVED: " + optString)
 
 	ro := RubyOptions{}
-	json.Unmarshal([]byte(optString), &ro)
+	err := json.Unmarshal([]byte(optString), &ro)
+  if (err != nil) {
+    panic("could not read input json string")
+  }
 	options := Options{ro.MinDepth, ro.MinNonRefCount, ro.IgnoreReferenceN}
 
 	if _, err := os.Stat(ro.File); os.IsNotExist(err) {
@@ -51,7 +54,7 @@ func ProcessInRuby(intOpts *C.char) *C.char {
 		}
 
 		if (isSNP(s, options)) {
-			str := s[0] + "\t" + s[1] + "\t" + s[2] + "\t" + s[3] + "\t" + s[4] + "\t" + s[5] + "\n"
+			str := text + "\n"
 			err := writeLine(ro.Out, str)
 
 			if (err != nil) {
