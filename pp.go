@@ -26,7 +26,7 @@ func ProcessInRuby(intOpts *C.char) *C.char {
 	}
 
 	optString := C.GoString(intOpts)
-	println("GO RECEIVED: " + optString)
+	// println("GO RECEIVED: " + optString)
 
 	ro := RubyOptions{}
 	err := json.Unmarshal([]byte(optString), &ro)

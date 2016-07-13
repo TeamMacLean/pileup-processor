@@ -19,7 +19,7 @@ opts[:ignore_reference_n] = true
 opts[:min_depth] = 6
 opts[:min_non_ref_count] = 3
 
-puts "RUBY SENT: " + opts.to_json
+# puts "RUBY SENT: " + opts.to_json
 
 error = LibPP.ProcessInRuby(opts.to_json)
 
