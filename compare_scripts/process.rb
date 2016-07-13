@@ -1,9 +1,5 @@
 # encoding: utf-8
 
-# require 'yaml'
-# require 'bio-samtools'
-# require 'bio-gngm'
-
 def is_snp(p, options)
   return false if p[4] == '*'
   return false if options[:ignore_reference_n] and p[2] == "N" or p[2] == "n"
@@ -22,25 +18,21 @@ def count(str)
 end
 
 def non_ref_count(str)
-  # str.count("ATGCatgc")
-  count(str)
+  str.count("ATGCatgc")
+  # count(str)
 end
 
+opts ={}
+opts[:ignore_reference_n] = true
+opts[:min_depth] = 6
+opts[:min_non_ref_count] = 3
 
-vars_hash = Hash.new { |h, k| h[k] = Hash.new(&h.default_proc) }
-
+outfile = File.open('str_count_out.txt', 'w')
+# outfile = File.open('char_count_out.txt', 'w')
 File.foreach(ARGV[0]) do |line|
-
   split_line = line.split("\t")
-
-  opts ={}
-  opts[:ignore_reference_n] = true
-  opts[:min_depth] = 6
-  opts[:min_non_ref_count] = 3
-
-
   if is_snp(split_line, opts)
-    vars_hash[split_line[0]][split_line[1].to_i] = split_line
+    outfile.puts line
   end
 end
-
+outfile.close
