@@ -11,6 +11,15 @@ def is_snp(p, options)
   false
 end
 
+def count(str)
+  counter = 0
+  str.each_char do |c|
+    if c=="A" || c=="T" || c=="G" || c="C" || c=="a" || c=="t" || c=="g" || c="c"
+      counter+=1
+    end
+  end
+  counter
+end
 
 def non_ref_count(str)
   # str.count("ATGCatgc")
@@ -35,12 +44,3 @@ File.foreach(ARGV[0]) do |line|
   end
 end
 
-def count(str)
-  counter = 0
-  str.each_char do |c|
-    if c=="A" |c=="T"|c=="G"|c="C"|c=="a" |c=="t"|c=="g"|c="c"
-      counter+=1
-    end
-  end
-  counter
-end
